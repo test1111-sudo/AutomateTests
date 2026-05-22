@@ -6,183 +6,250 @@ import { CartPage } from '../pages/cartPage';
 import { RegisterPage } from '../pages/registerPage';
 import { ContactPage } from '../pages/contactPage';
 
-test('register a user', async ({ page }) => {
-  const registerPage = new RegisterPage(page);
-  await registerPage.register();
-  await registerPage.signInAfterRegistration();
 
+test.describe('No sign-in required suite', () => {
+  test('register a user', async ({ page }) => { //website has authorization issues
+    const registerPage = new RegisterPage(page);
+    await registerPage.register();
+    await registerPage.signInAfterRegistration();
+  });
 
-})
+  test('home page loads with key elements visible', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.expectLoaded();
+  });
 
-test('home page loads with key elements visible', async ({ page }) => {
-  const homePage = new HomePage(page);
+  test('navigation categories are visible', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.openCategoryMenu();
+  });
 
-  await homePage.goto();
-  await homePage.expectLoaded();
+  test('search functionality works correctly', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.searchForItem('bolt');
+    await homePage.clearSearch();
+  });
+
+  test('invalid search shows no results', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.invalidSearch('abcd');
+  });
+
+  test('hand tools category opens correctly', async ({ page }) => {
+    const homePage = new HomePage(page);
+    const categoryPage = new CategoryPage(page);
+
+    await homePage.goto();
+    await homePage.openHandToolsCategory();
+    await categoryPage.expectHandToolsPageOpen();
+  });
+
+   test('power tools category opens correctly', async ({ page }) => {
+    const homePage = new HomePage(page);
+    const categoryPage = new CategoryPage(page);
+
+    await homePage.goto();
+    await homePage.openPowerToolsCategory();
+    await categoryPage.expectPowerToolsPageOpen();
+  });
+
+  test('check filter functionality', async ({ page }) => {
+    const homePage = new HomePage(page);
+
+    await homePage.goto();
+    const initialCount = await homePage.getProductCardsCount();
+    await homePage.filterByHandTools();
+    const filteredCount = await homePage.getProductCardsCount();
+    expect(filteredCount).toBeGreaterThan(0);
+
+    await homePage.filterByAZ();
+    await homePage.filterByPriceLowToHigh();
+  });
+
+  test('add two products to the cart', async ({ page }) => {
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+    const cartPage = new CartPage(page);
+
+    await homePage.goto();
+    await cartPage.emptyCartIfNeeded();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await productPage.addIncreaseQuantity();
+  });
+
+  test('send a contact form', async ({ page }) => {
+    const contactPage = new ContactPage(page);
+    const homePage = new HomePage(page);
+
+    await homePage.goto();
+    await contactPage.navigateToContactPage();
+    await contactPage.fillContactForm();
+    await contactPage.submitForm();
+    await contactPage.expectSuccessMessage();
+  });
+
+  test('add and empty cart items', async ({ page }) => {
+    const cartPage = new CartPage(page);
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.addToCartButton.click();
+    await homePage.goto();
+    await homePage.openHandToolsCategory();
+    await homePage.openFirstProduct();
+    await productPage.addToCartButton.click();
+    await homePage.goto();
+    await homePage.searchForItem('bolt');
+    await homePage.openFirstProduct();
+    await productPage.addToCartButton.click();
+    await cartPage.openCart();
+    await cartPage.emptyCartIfNeeded();
+  });
+   test('compare two items', async ({ page }) => { //was a real tricky because second compare button needed waiter
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+    const registerPage = new RegisterPage(page);
+
+    
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await expect(productPage.compareButton).toBeVisible();
+    await productPage.addToCompare();
+    await expect(productPage.relatedProductsTitle).toBeVisible();
+    await productPage.openFirstRelatedProduct();
+    await expect(productPage.compareButton).toBeVisible();
+    await productPage.addToCompare();
+    await expect(productPage.compareTwoButton).toBeVisible();
+    await productPage.compare();
+
+  });
+
+  
 });
 
-test('navigation categories are visible', async ({ page }) => {
-  const homePage = new HomePage(page);
-  await homePage.goto();
-  await homePage.openCategoryMenu();
+test.describe('Sign-in required suite', () => {
+  test.beforeEach(async ({ page }) => {
+    const homePage = new HomePage(page);
+    const registerPage = new RegisterPage(page);
+
+    await homePage.goto();
+    await registerPage.signInAfterRegistration();
+  });
+
+  test('checkout with bank transfer one product ', async ({ page }) => {
+    const cartPage = new CartPage(page);
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await productPage.addToCart();
+    await cartPage.openCart();
+    await cartPage.expectCartPageOpen();
+    await cartPage.checkoutButtonSignIn.click();;
+    await cartPage.fillBillingAddressIfEmpty();
+    await cartPage.payWithBankTransfer();
+
+  });
+
+  test('checkout with cash on delivery one product', async ({ page }) => {
+    const cartPage = new CartPage(page);
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await productPage.addToCart();
+    await cartPage.openCart();
+    await cartPage.expectCartPageOpen();
+    await cartPage.checkoutButtonSignIn.click();;
+    await cartPage.fillBillingAddressIfEmpty();
+    await cartPage.payWithCashOnDelivery();
+  });
+
+  test('checkout with credit card one product', async ({ page }) => {
+    const cartPage = new CartPage(page);
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await productPage.addToCart();
+    await cartPage.openCart();
+    await cartPage.expectCartPageOpen();
+    await cartPage.checkoutButtonSignIn.click();;
+    await cartPage.fillBillingAddressIfEmpty();
+    await cartPage.payWithCreditCard();
+  });
+
+  test('checkout with buy now pay later one product', async ({ page }) => {
+    const cartPage = new CartPage(page);
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await productPage.addToCart();
+    await cartPage.openCart();
+    await cartPage.expectCartPageOpen();
+    await cartPage.checkoutButtonSignIn.click();;
+    await cartPage.fillBillingAddressIfEmpty();
+    await cartPage.payWithBuyNowPayLater();
+  });
+
+  test('checkout with gift card one product', async ({ page }) => {
+    const cartPage = new CartPage(page);
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+    
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.expectProductPageOpen();
+    await productPage.addToCart();
+    await cartPage.openCart();
+    await cartPage.expectCartPageOpen();
+    await cartPage.checkoutButtonSignIn.click();;
+    await cartPage.fillBillingAddressIfEmpty();
+    await cartPage.payWithGiftCard();
+
+    
+  
+  
+  });
+
+
+  test('add item to favorites', async ({ page }) => {
+    const homePage = new HomePage(page);
+    const productPage = new ProductPage(page);
+
+    await homePage.goto();
+    await homePage.openFirstProduct();
+    await productPage.getProductName();
+    await productPage.addToFavorites();
+    await homePage.checkFavoritesSection();
+    await productPage.expectFavoriteContainsProduct(await productPage.getProductName());
+  });
+
+  test('sign out from the account', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.signOut();
+  });
 });
+test('forgot password flow', async ({ page }) => {
+    const registerPage = new RegisterPage(page);
 
-test('search functionality works correctly', async ({ page }) => {
-  const homePage = new HomePage(page);
-  await homePage.goto();
-  await homePage.searchForItem('bolt');
-  await homePage.clearSearch();
-});
-test('invalid search shows no results', async ({ page }) => {
-  const homePage = new HomePage(page);
-  await homePage.goto();
-  await homePage.invalidSearch('abcd');
-});
-
-test('hand tools category opens correctly', async ({ page }) => {
-  const homePage = new HomePage(page);
-  const categoryPage = new CategoryPage(page);
-
-  await homePage.goto();
-  await homePage.openHandToolsCategory();
-  await categoryPage.expectHandToolsPageOpen();
-});
-
-test('check filter functionality', async ({ page }) => {
-  const homePage = new HomePage(page);
-
-  await homePage.goto();
-  const initialCount = await homePage.getProductCardsCount();
-  await homePage.filterByHandTools();
-  const filteredCount = await homePage.getProductCardsCount();
-  expect(filteredCount).toBeGreaterThan(0);
-
-  await homePage.filterByAZ();
-  await homePage.filterByPriceLowToHigh();
-
-});
-
-
-test('add two products to the cart', async ({ page }) => {
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-  const cartPage = new CartPage(page);
-
-  await homePage.goto();
-  await cartPage.emptyCartIfNeeded();
-  await homePage.openFirstProduct();
-  await productPage.expectProductPageOpen();
-  await productPage.addIncreaseQuantity();
-});
-
-test('checkout with bank transfer one product', async ({ page }) => {
-  const cartPage = new CartPage(page);
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-
-
-  await homePage.goto();
-  await homePage.openFirstProduct();
-  await productPage.expectProductPageOpen();
-  await productPage.addToCart();
-  await cartPage.openCart();
-  await cartPage.expectCartPageOpen();
-  await cartPage.signIn();
-  await cartPage.fillBillingAddressIfEmpty();
-  await cartPage.payWithBankTransfer();
-});
-
-test('checkout with cash on delivery one product', async ({ page }) => {
-  const cartPage = new CartPage(page);
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-
-  await homePage.goto();
-  await homePage.openFirstProduct();
-  await productPage.expectProductPageOpen();
-  await productPage.addToCart();
-  await cartPage.openCart();
-  await cartPage.expectCartPageOpen();
-  await cartPage.signIn();
-  await cartPage.fillBillingAddressIfEmpty();
-  await cartPage.payWithCashOnDelivery();
-});
-
-test('checkout with credit card one product', async ({ page }) => {
-  const cartPage = new CartPage(page);
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-
-  await homePage.goto();
-  await homePage.openFirstProduct();
-  await productPage.expectProductPageOpen();
-  await productPage.addToCart();
-  await cartPage.openCart();
-  await cartPage.expectCartPageOpen();
-  await cartPage.signIn();
-  await cartPage.fillBillingAddressIfEmpty();
-  await cartPage.payWithCreditCard();
-});
-
-test('checkout with buy now pay later one product', async ({ page }) => {
-  const cartPage = new CartPage(page);
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-
-  await homePage.goto();
-  await homePage.openFirstProduct();
-  await productPage.expectProductPageOpen();
-  await productPage.addToCart();
-  await cartPage.openCart();
-  await cartPage.expectCartPageOpen();
-  await cartPage.signIn();
-  await cartPage.fillBillingAddressIfEmpty();
-  await cartPage.payWithBuyNowPayLater();
-});
-
-test('checkout with gift card one product', async ({ page }) => {
-  const cartPage = new CartPage(page);
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-
-  await homePage.goto();
-  await homePage.openFirstProduct();
-  await productPage.expectProductPageOpen();
-  await productPage.addToCart();
-  await cartPage.openCart();
-  await cartPage.expectCartPageOpen();
-  await cartPage.signIn();
-  await cartPage.fillBillingAddressIfEmpty();
-  await cartPage.payWithGiftCard();
-});
-test('send a contact form', async ({ page }) => {
-  const contactPage = new ContactPage(page);
-  const homePage = new HomePage(page);
-
-  await homePage.goto();
-  await contactPage.navigateToContactPage();
-  await contactPage.fillContactForm();
-  await contactPage.submitForm();
-  await contactPage.expectSuccessMessage();
-});
-
-test.only('add and empty cart items', async ({ page }) => {
-  const cartPage = new CartPage(page);
-  const homePage = new HomePage(page);
-  const productPage = new ProductPage(page);
-
-  await homePage.goto();
-  await homePage.openFirstProduct();
-  await productPage.addToCart();
-  await homePage.goto();
-  await homePage.openHandToolsCategory();
-  await homePage.openFirstProduct();
-  await productPage.addToCart();
-  await homePage.goto();
-  await homePage.searchForItem('bolt');
-  await homePage.openFirstProduct();
-  await productPage.addToCart();
-
-  await cartPage.openCart();
-  await cartPage.emptyCartIfNeeded();
-});
+    await registerPage.forgotPasswordFlow();
+  });

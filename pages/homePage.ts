@@ -22,7 +22,10 @@ export class HomePage {
   readonly sortByAZ: Locator;
   readonly sortByLowToHigh: Locator;
   readonly firstProductNameLink: Locator;
-  
+  readonly navMenu: Locator;
+  readonly signOutButton: Locator;
+  readonly favoritesLink: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.logo = page.locator('svg#Layer_1');
@@ -43,9 +46,13 @@ export class HomePage {
     this.productPrices = page.locator('[data-test="product-price"]');
     this.filterField = page.locator('[data-test="sort"]');
     this.firstProductNameLink = page.locator('a[href^="/product/"] [data-test="product-name"]').first();
+    this.navMenu = page.locator('[data-test="nav-menu"]');
+    this.signOutButton = page.locator('[data-test="nav-sign-out"]');
+    this.favoritesLink = page.locator('[data-test="nav-my-favorites"]');
   }
 
   async goto() {
+    await this.page.reload();
     await this.page.goto('https://practicesoftwaretesting.com/');
   }
 
@@ -89,6 +96,10 @@ export class HomePage {
     await this.categoryButton.click();
     await this.handToolsLink.click();
   }
+  async openPowerToolsCategory() {
+    await this.categoryButton.click();
+    await this.powerToolsLink.click();
+  }
 
   async invalidSearch(item: string) {
     await this.search.fill(item);
@@ -118,8 +129,17 @@ export class HomePage {
     await expect(this.filterField).toHaveValue('price,asc');
   }
   async openFirstProduct() {
+    await expect(this.firstProductNameLink).toBeVisible();
     await this.productCards.first().click();
   }
 
+  async signOut() {
+    await this.navMenu.click();
+    await this.signOutButton.click();
+    await expect(this.page).toHaveURL('https://practicesoftwaretesting.com/auth/login');
+  }
+  async checkFavoritesSection(){
+        await this.navMenu.click();
 
+  }
 }

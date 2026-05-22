@@ -42,6 +42,7 @@ export class CartPage {
     readonly checkoutButtonSignIn : Locator;
     readonly checkoutButtonBilling : Locator;
 
+
     constructor(page: Page) {
         this.page = page;
         this.items = page.locator('[data-test="cart-items"]');
@@ -82,6 +83,8 @@ export class CartPage {
         this.validationCodeInput = page.locator('[data-test="validation_code"]');
         this.cartIcon = page.locator('[data-test="nav-cart"]');
         this.homeIcon = page.locator('[data-test="nav-home"]');
+
+
     }
 async openCart() {
     await this.page.goto('https://practicesoftwaretesting.com/checkout');
@@ -110,6 +113,11 @@ async verifyTotalPrice(expectedPrice: string) {
   await this.checkoutButton.click();
 }
 async signIn() {
+  if (await this.loggedInMessage.isVisible()) {
+    await this.checkoutButtonSignIn.click();
+    return;
+  }
+
   await this.emailInput.fill(testUser.email);
   await this.passwordInput.fill(testUser.password);
   await this.loginButton.click();
@@ -126,6 +134,7 @@ async payWithBankTransfer() {
     await this.bankNameInput.fill(paymentDetails.bankName);
     await this.accountNameInput.fill(paymentDetails.accountName);
     await this.accountNumberInput.fill(paymentDetails.accountNumber);
+    await expect(this.confirmButton).toBeVisible();
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
      await this.confirmButton.click();
@@ -133,8 +142,10 @@ async payWithBankTransfer() {
 }
 async payWithCashOnDelivery() {
     await this.paymentDropdown.selectOption('cash-on-delivery');
+    await expect(this.confirmButton).toBeVisible();
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
+    await this.confirmButton.click();
 }
 async payWithCreditCard() {
     await this.paymentDropdown.selectOption('credit-card');
@@ -142,21 +153,27 @@ async payWithCreditCard() {
     await this.expirationDateInput.fill(paymentDetails.expirationDate);
     await this.cvvInput.fill(paymentDetails.cvv);
     await this.cardholderNameInput.fill(paymentDetails.cardholderName);
+    await expect(this.confirmButton).toBeVisible();
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
+    await this.confirmButton.click();
 }
 async payWithBuyNowPayLater() {
     await this.paymentDropdown.selectOption('buy-now-pay-later');
     await this.installmentDropdown.selectOption('3');
+    await expect(this.confirmButton).toBeVisible();
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
+    await this.confirmButton.click();
 }
 async payWithGiftCard() {
     await this.paymentDropdown.selectOption('gift-card');
     await this.giftCardNumberInput.fill(paymentDetails.giftCardNumber);
     await this.validationCodeInput.fill(paymentDetails.giftCardPin);
+    await expect(this.confirmButton).toBeVisible();
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
+    await this.confirmButton.click();
 }
 
 
@@ -170,5 +187,4 @@ async emptyCartIfNeeded() {
   await expect(this.cartRows).toHaveCount(0);
   await this.page.goto('https://practicesoftwaretesting.com/');
 }
-
 }

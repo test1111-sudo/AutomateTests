@@ -13,4 +13,9 @@ export class CategoryPage {
     await expect(this.page).toHaveURL("https://practicesoftwaretesting.com/category/hand-tools");
     await expect(this.pageTitle).toHaveText('Category: Hand Tools');
   }
+
+  async expectPowerToolsPageOpen() {
+    await expect(this.page).toHaveURL("https://practicesoftwaretesting.com/category/power-tools");
+    await expect(this.pageTitle).toHaveText('Category: Power Tools');
+  }
 }

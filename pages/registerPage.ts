@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { testUser } from '../test-data/user';
+import { link } from 'fs/promises';
 
 export class RegisterPage {
     readonly page: Page;
@@ -18,6 +19,9 @@ export class RegisterPage {
     readonly registerButton: Locator;
     readonly successMessage: Locator;
     readonly loginButton: Locator;
+    readonly forgotPasswordLink: Locator;
+    readonly forgotPasswordButton: Locator;
+    readonly pageTitle: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -36,6 +40,10 @@ export class RegisterPage {
         this.registerButton = page.locator('[data-test="register-submit"]');
         this.successMessage = page.locator('[data-test="success-message"]');
         this.loginButton = page.locator('[data-test="login-submit"]');
+        this.forgotPasswordLink = page.locator('[data-test="forgot-password-link"]');
+        this.forgotPasswordButton = page.locator('[data-test="forgot-password-submit"]');
+        this.pageTitle = page.locator('[data-test="page-title"]');
+
     }
 
     async register() {
@@ -46,23 +54,36 @@ export class RegisterPage {
     await this.countryDropdown.selectOption({ label: testUser.country });
     await this.postalCodeInput.fill(testUser.postalCode);
     await this.houseNumberInput.fill(testUser.houseNumber);
-    await this.streetInput.fill(testUser.street);
-    await this.cityInput.fill(testUser.city);
-    await this.stateInput.fill(testUser.state);
+    await this.page.waitForTimeout(5000);
     await this.phoneInput.fill(testUser.phone);
     await this.emailInput.fill(testUser.email);
     await this.passwordInput.fill(testUser.password);
     await this.registerButton.click();
+    await this.page.waitForTimeout(5000);
+
 
     }
 
     async signInAfterRegistration() {
+        await this.page.goto('https://practicesoftwaretesting.com/auth/login');
+        await expect(this.page).toHaveURL('https://practicesoftwaretesting.com/auth/login');
         await this.emailInput.fill(testUser.email);
         await this.passwordInput.fill(testUser.password);
         await this.loginButton.click();
+        await this.page.waitForTimeout(5000);
+        await expect(this.pageTitle).toHaveText('My account');
+
+       
     }
 
     async expectRegistrationSuccess() {
         await expect(this.successMessage).toBeVisible();
+    }
+    async forgotPasswordFlow() {
+        await this.page.goto('https://practicesoftwaretesting.com/auth/login');
+        await this.forgotPasswordLink.click();
+        await this.emailInput.fill(testUser.email);
+        await this.forgotPasswordButton.click();
+        await expect(this.page.getByText('page.forgot-password.confirm')).toBeVisible();
     }
 }

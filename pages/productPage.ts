@@ -13,6 +13,11 @@ export class ProductPage {
     readonly specificationsTitle: Locator;
     readonly productSpecifications: Locator;
     readonly cartQuantity: Locator;
+    readonly relatedProductsTitle: Locator;
+    readonly relatedProductLinks: Locator;
+    readonly compareTwoButton: Locator;
+    
+
 
 
     constructor(page: Page) {
@@ -22,12 +27,16 @@ export class ProductPage {
         this.description = page.locator('[data-test="product-description"]');
         this.addToCartButton = page.getByRole('button', { name: 'Add to Cart' });
         this.addToFavoritesButton = page.locator('[data-test="add-to-favorites"]');
-        this.compareButton = page.locator('[data-test="add-to-compare"]');
+        this.compareButton = page.getByRole('button', { name: 'Compare' });
         this.increaseQuantityButton = page.locator('[data-test="increase-quantity"]');
         this.decreaseQuantityButton = page.locator('[data-test="decrease-quantity"]');
         this.specificationsTitle = page.locator('[data-test="specs-title"]');
         this.productSpecifications = page.locator('[data-test="product-specs"]');
         this.cartQuantity = page.locator('[data-test="cart-quantity"]');
+        this.relatedProductsTitle = page.getByRole('heading', { name: 'Related products' });
+        this.relatedProductLinks = page.locator('a.card[href^="/product/"]');
+        this.compareTwoButton = page.locator('[data-test="compare-link"]');
+        
     }
 
 
@@ -45,6 +54,8 @@ export class ProductPage {
     }
     async addToCart() {
         await this.addToCartButton.click();
+        await expect(this.cartQuantity).toHaveText('1');
+
         
     }
     async addIncreaseQuantity() {
@@ -52,5 +63,34 @@ export class ProductPage {
         await this.addToCartButton.click();
         await expect(this.cartQuantity).toHaveText('2');
     }
-    
+    async openFirstRelatedProduct() {
+        await expect(this.relatedProductsTitle).toBeVisible();
+        await expect(this.relatedProductLinks.first()).toBeVisible();
+        await this.relatedProductLinks.first().click();
+        await this.page.waitForTimeout(5000);
+
+
+    }
+    async addToCompare(){
+        await expect(this.compareButton).toBeVisible();
+        //await expect(this.compareButton).not.toHaveClass(/btn-outline-primary/);
+        await this.compareButton.click();
+        await this.page.waitForTimeout(5000);
+        //await expect(this.compareButton).toHaveClass(/btn btn-primary/);
+    }
+    async compare(){
+        //await this.page.waitForTimeout(5000);
+        await this.compareTwoButton.click();
+        await expect(this.page).toHaveURL('https://practicesoftwaretesting.com/comparison');
+    }
+    async addToFavorites(){
+        await this.addToFavoritesButton.click();
+    }
+    async getProductName() {
+        return (await this.productTitle.textContent())?.trim() || '';
+    }
+    async expectFavoriteContainsProduct(productName: string) {
+    await expect(this.productTitle).toContainText(productName);
+    }
+     
 }
