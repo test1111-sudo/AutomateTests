@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { testUser } from '../test-data/user';
+import { paymentDetails, testUser } from '../test-data/user';
 
 export class CartPage {
     readonly page: Page;
@@ -115,7 +115,6 @@ async signIn() {
   await this.loginButton.click();
   await this.checkoutButtonSignIn.click();
 
-
 }
 async fillBillingAddressIfEmpty() {
     await this.page.waitForTimeout(5000);
@@ -124,9 +123,9 @@ async fillBillingAddressIfEmpty() {
 }
 async payWithBankTransfer() {
     await this.paymentDropdown.selectOption('bank-transfer');
-    await this.bankNameInput.fill('My Bank');
-    await this.accountNameInput.fill('John Doe');
-    await this.accountNumberInput.fill('123456789');
+    await this.bankNameInput.fill(paymentDetails.bankName);
+    await this.accountNameInput.fill(paymentDetails.accountName);
+    await this.accountNumberInput.fill(paymentDetails.accountNumber);
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
      await this.confirmButton.click();
@@ -139,10 +138,10 @@ async payWithCashOnDelivery() {
 }
 async payWithCreditCard() {
     await this.paymentDropdown.selectOption('credit-card');
-    await this.creditCardNumberInput.fill('4111-1111-1111-1111');   
-    await this.expirationDateInput.fill('12/2030');
-    await this.cvvInput.fill('123');
-    await this.cardholderNameInput.fill('John Doe');
+    await this.creditCardNumberInput.fill(paymentDetails.cardNumber);
+    await this.expirationDateInput.fill(paymentDetails.expirationDate);
+    await this.cvvInput.fill(paymentDetails.cvv);
+    await this.cardholderNameInput.fill(paymentDetails.cardholderName);
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
 }
@@ -154,8 +153,8 @@ async payWithBuyNowPayLater() {
 }
 async payWithGiftCard() {
     await this.paymentDropdown.selectOption('gift-card');
-    await this.giftCardNumberInput.fill('123456789012');
-    await this.validationCodeInput.fill('123');
+    await this.giftCardNumberInput.fill(paymentDetails.giftCardNumber);
+    await this.validationCodeInput.fill(paymentDetails.giftCardPin);
     await this.confirmButton.click();
     await expect(this.successMessage).toBeVisible();
 }

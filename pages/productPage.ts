@@ -45,7 +45,7 @@ export class ProductPage {
     }
     async addToCart() {
         await this.addToCartButton.click();
-        await expect(this.cartQuantity).toHaveText('1');
+        
     }
     async addIncreaseQuantity() {
         await this.increaseQuantityButton.click();

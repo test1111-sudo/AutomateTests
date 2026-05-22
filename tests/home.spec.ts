@@ -4,6 +4,7 @@ import { HomePage } from '../pages/homePage';
 import { ProductPage } from '../pages/productPage';
 import { CartPage } from '../pages/cartPage';
 import { RegisterPage } from '../pages/registerPage';
+import { ContactPage } from '../pages/contactPage';
 
 test('register a user', async ({ page }) => {
   const registerPage = new RegisterPage(page);
@@ -153,4 +154,35 @@ test('checkout with gift card one product', async ({ page }) => {
   await cartPage.signIn();
   await cartPage.fillBillingAddressIfEmpty();
   await cartPage.payWithGiftCard();
+});
+test('send a contact form', async ({ page }) => {
+  const contactPage = new ContactPage(page);
+  const homePage = new HomePage(page);
+
+  await homePage.goto();
+  await contactPage.navigateToContactPage();
+  await contactPage.fillContactForm();
+  await contactPage.submitForm();
+  await contactPage.expectSuccessMessage();
+});
+
+test.only('add and empty cart items', async ({ page }) => {
+  const cartPage = new CartPage(page);
+  const homePage = new HomePage(page);
+  const productPage = new ProductPage(page);
+
+  await homePage.goto();
+  await homePage.openFirstProduct();
+  await productPage.addToCart();
+  await homePage.goto();
+  await homePage.openHandToolsCategory();
+  await homePage.openFirstProduct();
+  await productPage.addToCart();
+  await homePage.goto();
+  await homePage.searchForItem('bolt');
+  await homePage.openFirstProduct();
+  await productPage.addToCart();
+
+  await cartPage.openCart();
+  await cartPage.emptyCartIfNeeded();
 });

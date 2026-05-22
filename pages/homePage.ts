@@ -22,7 +22,7 @@ export class HomePage {
   readonly sortByAZ: Locator;
   readonly sortByLowToHigh: Locator;
   readonly firstProductNameLink: Locator;
-
+  
   constructor(page: Page) {
     this.page = page;
     this.logo = page.locator('svg#Layer_1');
@@ -118,7 +118,7 @@ export class HomePage {
     await expect(this.filterField).toHaveValue('price,asc');
   }
   async openFirstProduct() {
-    await this.firstProductNameLink.click();
+    await this.productCards.first().click();
   }
 
 
