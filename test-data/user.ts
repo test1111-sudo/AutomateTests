@@ -1,4 +1,4 @@
-//const uniqueId = `${Date.now()}${Math.floor(Math.random() * 100)}`;
+const uniqueId = `${Date.now()}${Math.floor(Math.random() * 100)}`;
 
 export const testUser = {
   firstName: 'Test',
@@ -11,7 +11,7 @@ export const testUser = {
   city: 'Tbilisi',
   state: 'Tbilisi',
   phone: '555123456',
-  email: `email10@gmail.comw`,
+  email: `email${uniqueId}@gmail.com`,
   password: 'Noemail123!@#',
   message: "Contact me here, PEACE.Contact me here, PEACE.Contact me here, PEACE.Contact me here, PEACE.Contact me here, PEACE.Contact me here, PEACE."
 };
